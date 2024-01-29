@@ -1,0 +1,209 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#define MAX_TOKENS 100
+#define MAX_TOKEN_LEN 100
+
+
+struct histo {
+  int Reference_Vol;
+  char Transaction[10];
+  int Agence;
+  int Valeur;
+};
+
+void update_file(char*file,int line_number_to_update,char new_line[] ){
+    FILE* fp;
+    int current_line_number = 1;
+    char line[100];
+    // Open the file for reading and writing
+    fp = fopen(file, "r+");
+    // Check if the file was opened successfully
+    if (fp == NULL) {
+        perror("Error opening file");
+        exit(1);
+    }
+    // Read the file line by line
+    while (fgets(line, 100, fp) != NULL) {
+        // Check if this is the line we want to update
+        if (current_line_number == line_number_to_update) {
+            // Move the file pointer back to the beginning of the line
+            fseek(fp, -(strlen(line)), SEEK_CUR);
+            // Write the updated line to the file
+            fputs(new_line, fp);
+        }
+        current_line_number++;
+    }
+    // Close the file
+    fclose(fp);
+    }
+void split_line(char line[100], char *delimiter, char (*tokens)[MAX_TOKEN_LEN], int *num_tokens) {
+    char *token;
+    *num_tokens = 0;
+    token = strtok(line, delimiter);
+    while (token != NULL && *num_tokens < MAX_TOKENS) {
+        strncpy(tokens[*num_tokens], token, MAX_TOKEN_LEN - 1);
+        (*num_tokens)++;
+        token = strtok(NULL, delimiter);
+    }
+}
+void afficher_list_Reservation()
+{
+ FILE *f;
+ char * line = NULL;
+ size_t len = 0;
+ ssize_t read;
+ f=fopen("histo.txt","r");
+ if (f == NULL) {
+        printf("Error: file pointer is null.");
+        exit(1);
+    }
+  while ((read = getline(&line, &len, f)) != -1) {
+        printf("%s", line);
+    }
+
+}
+
+char* traiter_demande(struct histo r){
+    char* msg;
+    int a;
+    float b;
+    int nb,x,y;
+    int i,s=0;
+    char str[50]="";
+    char str4[50]="";
+     char str2[50];
+     char str3[50];
+    char str1[50];
+    char line[100];
+    char subbuff[50];
+    char subbuff2[50];
+    char* new_line;
+    char tokens[MAX_TOKENS][MAX_TOKEN_LEN];
+    int num_tokens = 0;
+    int line_number_to_update=0;
+    char delimiter[] = " ";
+    int nbr_place;
+    float prix_place;
+      FILE*f=fopen("histo.txt","a");
+      FILE*p=fopen("facture.txt","r+");
+      FILE*t=fopen("vols.txt","r+");
+      if (f== NULL) {
+        printf("Error opening the file\n");
+        exit(-1);
+      }
+       if (t== NULL) {
+        printf("Error opening the file\n");
+        exit(-1);
+      }
+      if (p== NULL) {
+        printf("Error opening the file\n");
+        exit(-1);
+      }
+       while (fgets(line, sizeof(line),t) != NULL) {
+          split_line(line, delimiter, tokens, &num_tokens);
+          s++;
+          if(r.Reference_Vol==atoi(tokens[0])) goto flag;
+          }
+          
+      flag:    
+      printf("%s",tokens[2]);    
+if (strcmp(r.Transaction, "Annulation") == 0){
+      fprintf(f,"%d %d %s %d  succès \n",r.Reference_Vol,r.Agence,r.Transaction,r.Valeur);
+      fclose(f);
+   while (fgets(line, sizeof(line), p) != NULL) {
+     line_number_to_update+=1;
+     for(i=0;i<strlen(line);i++){
+              if (line[i]==' ') 
+              {
+              nb=i;
+        strncpy(subbuff,line,nb);  
+        strncpy(subbuff2,line+nb,strlen(line)-nb);   
+        a=atoi(subbuff);       
+        b=atof(subbuff2); 
+        if(a==r.Agence){
+        b-=atof(tokens[3])*r.Valeur;  
+        printf("%d",r.Reference_Vol);
+        printf("%f",b);
+        b+=(atof(tokens[3])*r.Valeur)*0.1;
+        printf("%f",b);
+        sprintf(str,"%d", a);
+        sprintf(str1,"%d", (int)b);
+        strcat(str, " ");   
+        strcat(str,str1);
+        update_file("facture.txt",line_number_to_update,str); 
+         y=atoi(tokens[2]);
+        y+=r.Valeur;
+       sprintf(str3,"%d", y);
+   strcat(str4,tokens[0]);
+   strcat(str4," ");
+   strcat(str4,tokens[1]);
+   strcat(str4," ");
+   strcat(str4,str3);
+   strcat(str4," ");
+   strcat(str4,tokens[3]);
+   
+   
+   
+   update_file("vols.txt",s,str4); 
+        return "Annulation terminée avec succée";  
+        }}
+                  
+        }   
+      }
+      return "error11111";
+}
+else if (strcmp(r.Transaction, "Demande") == 0)
+{
+  if(atoi(tokens[2])<r.Valeur)
+  {
+  fprintf(f,"%d %d %s %d  impossible \n",r.Reference_Vol,r.Agence,r.Transaction,r.Valeur);
+  fclose(f);
+  return "Place non disponible";
+  }
+  else 
+  {  
+    fprintf(f,"%d %d %s %d  Succès \n",r.Reference_Vol,r.Agence,r.Transaction,r.Valeur);
+    fclose(f);
+    x=atoi(tokens[2]);
+    x-=r.Valeur;
+    sprintf(str2,"%d", x);
+   strcat(str,tokens[0]);
+   strcat(str," ");
+   strcat(str,tokens[1]);
+   strcat(str," ");
+   strcat(str,str2);
+   strcat(str," ");
+   strcat(str,tokens[3]);
+    printf("\n%s \n",str);
+   update_file("vols.txt",s,str); 
+    while (fgets(line, sizeof(line), p) != NULL) {
+     line_number_to_update+=1;
+     for(i=0;i<strlen(line);i++){
+              if (line[i]==' ') 
+              {
+              nb=i;
+        strncpy(subbuff,line,nb);  
+        strncpy(subbuff2,line+nb,strlen(line)-nb);   
+        a=atoi(subbuff);       
+        b=atof(subbuff2); 
+        if(a==r.Agence){  
+        b+=(atof(tokens[3])*r.Valeur);
+        sprintf(str,"%d", a);
+        sprintf(str1,"%d", (int)b);
+        strcat(str, " ");   
+        strcat(str,str1);
+        printf("%s \n",str);
+        update_file("facture.txt",line_number_to_update,str); 
+        return "Demande terminée avec succée";  
+        }}
+                  
+        }   
+      }
+  }
+
+}
+else {return "svp choisir valeur de transaction"; }
+
+}

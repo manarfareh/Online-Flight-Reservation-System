@@ -1,0 +1,30 @@
+#include "vols.h"
+#include "histo.h"
+#include "facture.h"
+void start_dashboard() {
+    int choix;
+    printf("choisir :\n 1:afficher listes des vols .\n 2:afficher listes des histo. \n 3:afficher listes des factures. \n");
+    scanf("%d",&choix); 
+    switch(choix)
+    {
+    case 1 :
+    {
+    afficher_list_vols();
+    break;
+    }
+    case 2:
+    {
+    afficher_list_Reservation();
+    break;
+    }
+    case 3:
+    {
+    afficher_list_facture();
+    break;
+    }
+    default:
+    {
+    break;
+    }
+}
+}

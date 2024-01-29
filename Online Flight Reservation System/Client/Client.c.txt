@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+#define PORT 8080
+#define BUFFER_SIZE 1024
+
+struct facture{
+  int Reference_Agence;
+  float Somme_a_payer;
+};
+
+
+struct histo {
+  int Reference_Vol;
+  char Transaction[10];
+  int Agence;
+  int Valeur;
+};
+int main() {
+int choix;
+int ref;
+    int sockfd;
+    char msg[50] = "consultation";
+    char buffer[50] = { 0 };
+    int bytes;
+    struct facture fact;
+    struct sockaddr_in server_addr;
+
+    // Create a socket
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // Connect to the server
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+
+    if (inet_pton(AF_INET, "192.168.80.129", &server_addr.sin_addr) <= 0) {
+        perror("inet_pton failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("connect failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    
+    
+    //Dashboard client 
+    
+ 
+    printf("choisir :\n 1:consulter ma facture .\n 2:annuler une reservation. \n 3:ajouter une reservation. \n");
+    scanf("%d",&choix); 
+    switch(choix)
+    {
+    case 1 :
+    {
+    printf("donner la reference de votre Agence \n");
+    scanf("%d",&ref);
+    send(sockfd,"Consultation",strlen("Consultation"),0);
+    send(sockfd, &ref, sizeof(ref), 0);
+    bytes = read(sockfd, &fact, sizeof( fact));
+    printf("\n %d   %f \n",fact.Reference_Agence,fact.Somme_a_payer);
+    break;
+    }
+    case 2:
+    {
+    struct histo h;
+    send(sockfd,"Demande",strlen("Demande"),0);
+    printf("donner la reference de votre Agence \n");
+    scanf("%d",&h.Agence);
+    printf("donner la reference de vol");
+    scanf("%d",&h.Reference_Vol);
+     printf("combien de places voulez vous annuler \n");
+    scanf("%d",&h.Valeur);
+    strcpy(h.Transaction, "Annulation");
+    send(sockfd, &h, sizeof(h),0);
+    bytes = read(sockfd, buffer, sizeof(buffer));
+     printf("Response from server: %s\n", buffer);
+    break;
+    }
+    case 3:
+    {
+    struct histo h;
+    send(sockfd,"Demande",strlen("Demande"),0);
+    printf("donner la reference de votre Agence \n");
+    scanf("%d",&h.Agence);
+    printf("donner la reference de vol \n");
+    scanf("%d",&h.Reference_Vol);
+     printf("combien de places voulez vous reserver \n");
+    scanf("%d",&h.Valeur);
+    strcpy(h.Transaction, "Demande");
+    send(sockfd, &h, sizeof(h),0);
+    bytes = read(sockfd, buffer, sizeof(buffer));
+     printf("Response from server: %s\n", buffer);
+    break;
+    }
+    default:
+    {
+    break;
+    }
+}
+  
+
+
+    // Close socket
+    close(sockfd);
+
+    return 0;
+    
+    }
+

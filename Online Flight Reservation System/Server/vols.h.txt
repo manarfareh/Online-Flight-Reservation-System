@@ -1,0 +1,26 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+struct vol {
+  int Reference_Vol;
+  char Destination[50];
+  int Nombre_Places;
+  float Prix_Place;
+};
+
+void afficher_list_vols()
+{
+ FILE *f;
+ char * line = NULL;
+ size_t len = 0;
+ ssize_t read;
+ f=fopen("vols.txt","r");
+ if (f == NULL) {
+        printf("Error: file pointer is null.");
+        exit(1);
+    }
+  while ((read = getline(&line, &len, f)) != -1) {
+        printf("%s", line);
+    }
+}

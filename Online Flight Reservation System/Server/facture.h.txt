@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+struct facture{
+  int Reference_Agence;
+  float Somme_a_payer;
+};
+
+void afficher_list_facture()
+{
+ FILE *f;
+ char * line = NULL;
+ size_t len = 0;
+ ssize_t r;
+ f=fopen("facture.txt","r");
+ if (f == NULL) {
+        printf("Error: file pointer is null.");
+        exit(1);
+    }
+  while ((r = getline(&line, &len, f)) != -1) {
+        printf("%s", line);
+    }
+    fclose(f);
+}
+struct facture get_facture_by_ref(int ref)
+{
+struct facture fact;
+FILE *f;
+int i,n;
+ size_t len = 0;
+char * line = NULL;
+char ch1[50];
+char ch2[50];
+ ssize_t r;
+ f=fopen("facture.txt","r");
+ if (f == NULL) {
+        printf("Error: file pointer is null.");
+        exit(1);
+    }
+ while ((r= getline(&line, &len, f)) != -1) {
+    for(i=0;i<strlen(line);i++)
+    {
+    if(line[i]==' ') n=i;
+    }
+    fact.Reference_Agence=atoi(strncpy(ch1,line,n));
+    fact.Somme_a_payer=atof(strncpy(ch2,line+n,strlen(line)-n));
+    if(fact.Reference_Agence==ref){ 
+    fclose(f);
+    return fact;}
+}
+printf("Error: Pas de Facture.");
+        exit(1);
+}
